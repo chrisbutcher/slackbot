@@ -1,0 +1,1 @@
+web: slackbot -port=$PORT -slack_token=$SLACK_TOKEN
