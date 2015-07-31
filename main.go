@@ -1,59 +1,59 @@
 package main
 
 import (
-  "flag"
-  "fmt"
-  "github.com/gin-gonic/gin"
-  "net/http"
+	"flag"
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 type SlackCommand struct {
-  Token       string `form:"token" binding:"required"`
-  TeamID      string `form:"team_id" binding:"required"`
-  TeamDomain  string `form:"team_domain" binding:"required"`
-  ChannelID   string `form:"channel_id" binding:"required"`
-  ChannelName string `form:"channel_name" binding:"required"`
-  UserID      string `form:"user_id" binding:"required"`
-  UserName    string `form:"user_name" binding:"required"`
-  Command     string `form:"command" binding:"required"`
-  Text        string `form:"text" binding:"required"`
+	Token       string `form:"token" binding:"required"`
+	TeamID      string `form:"team_id" binding:"required"`
+	TeamDomain  string `form:"team_domain" binding:"required"`
+	ChannelID   string `form:"channel_id" binding:"required"`
+	ChannelName string `form:"channel_name" binding:"required"`
+	UserID      string `form:"user_id" binding:"required"`
+	UserName    string `form:"user_name" binding:"required"`
+	Command     string `form:"command" binding:"required"`
+	Text        string `form:"text" binding:"required"`
 }
 
 func buildReply(slackCmd SlackCommand) string {
-  msg := "Hello " + slackCmd.UserName + ". "
-  msg += "[command: " + slackCmd.Command + ", "
-  msg += "text:" + slackCmd.Text + ", "
-  msg += "channel_name: " + slackCmd.ChannelName + "]"
-  return msg
+	msg := "Hello " + slackCmd.UserName + ". "
+	msg += "[command: " + slackCmd.Command + ", "
+	msg += "text:" + slackCmd.Text + ", "
+	msg += "channel_name: " + slackCmd.ChannelName + "]"
+	return msg
 }
 
 func main() {
-  port := flag.String("port", "3000", "HTTP port")
-  slack_token := flag.String("slack_token", "debug", "Slack verification token")
-  flag.Parse()
+	port := flag.String("port", "3000", "HTTP port")
+	slack_token := flag.String("slack_token", "debug", "Slack verification token")
+	flag.Parse()
 
-  r := gin.New()
+	r := gin.New()
 
-  // Global middleware
-  r.Use(gin.Logger())
-  r.Use(gin.Recovery())
+	// Global middleware
+	r.Use(gin.Logger())
+	r.Use(gin.Recovery())
 
-  r.GET("/", func(c *gin.Context) {
-    c.String(http.StatusOK, "bot active")
-  })
+	r.GET("/", func(c *gin.Context) {
+		c.String(http.StatusOK, "bot active")
+	})
 
-  r.POST("/bot/command", func(c *gin.Context) {
-    var slackCmd SlackCommand
-    c.Bind(&slackCmd)
+	r.POST("/bot/command", func(c *gin.Context) {
+		var slackCmd SlackCommand
+		c.Bind(&slackCmd)
 
-    if slackCmd.Token != *slack_token {
-      c.String(http.StatusUnauthorized, "not authorized")
-      return
-    }
+		if slackCmd.Token != *slack_token {
+			c.String(http.StatusUnauthorized, "not authorized")
+			return
+		}
 
-    c.String(http.StatusOK, buildReply(slackCmd))
-  })
+		c.String(http.StatusOK, buildReply(slackCmd))
+	})
 
-  fmt.Println("Listening on port " + *port)
-  r.Run(":" + *port)
+	fmt.Println("Listening on port " + *port)
+	r.Run(":" + *port)
 }
